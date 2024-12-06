@@ -1,5 +1,20 @@
 import { BotContext, SessionData } from '../types';
+import Web3 from 'web3';
+import dotenv from 'dotenv';
+dotenv.config();
 
+// Initialize Web3 with a provider (e.g., Infura, Alchemy, or local node)
+const web3 = new Web3('https://rpc2-testnet.emc.network');
+
+// Define the contract ABI and address
+const stakingAbi = require('../../abi/staking.json');
+const contractAddress = process.env.CONTRACT_ADDR || '0x8Dc5B2Ccb8F325898832129e5507237268d561A8';
+
+// Create a contract instance
+const contract = new web3.eth.Contract(stakingAbi, contractAddress);
+// Set up the account to sign the transaction
+const account: string = process.env.ACCOUNT || '0x90de83fd2cd4d01660cd6909692568a14661cdf1';
+const privateKey: string = process.env.PRIVATE_KEY || 'default_private_key'; 
 interface LiquidityPool {
   name: string;
   apy: string;
@@ -12,11 +27,7 @@ interface LiquidityPool {
 export async function handleDeFiLiquidity(ctx: BotContext) {
     // Initialize session and messages if they don't exist
   if (!ctx.session) {
-    ctx.session = {
-      messages: [],
-      portfolio: {}, // Add this line, or initialize with appropriate data,
-      awaitingPortfolioInput: false
-    } as SessionData;
+    await ctx.reply("Please start the bot")
   }
   if (!ctx.session.messages) {
     ctx.session.messages = [];
@@ -84,25 +95,48 @@ export async function handleDeFiLiquidity(ctx: BotContext) {
   message += "\nWhat would you like to do?\n";
   message += "• Add Liquidity\n";
   message += "• Remove Liquidity\n";
-  message += "• Rebalance Portfolio";
+  message += "• Claim Profit";
 
   ctx.session.messages.push({ type: 'bot', content: message });
   await ctx.reply(message, {
     reply_markup: {
       keyboard: [
         [{ text: "Add Liquidity" }, { text: "Remove Liquidity" }],
-        [{ text: "Rebalance Portfolio" }, { text: "Back to Main Menu" }]
+        [{ text: "Claim Profit" }, { text: "Back to Main Menu" }]
       ],
       resize_keyboard: true,
       one_time_keyboard: false
     }
   });
+  
 }
 
-export async function handleAddLiquidity(ctx: BotContext) {
-  const message = "To add liquidity, please specify the pool and the amount you wish to add. For example: 'Add 100 USDC to ETH/USDC pool'";
-  ctx.session.messages.push({ type: 'bot', content: message });
-  await ctx.reply(message);
+export async function handleAddLiquidity(ctx: BotContext) {   
+   // Define the function parameters
+   const functionName: string = 'stake';
+   const params: any[] = [ /* Your function parameters here */ ];
+
+   // Create the transaction
+   const tx = {
+       from: account,
+       to: contractAddress,
+       gas: 2000000,
+       gasPrice: web3.utils.toWei('20', 'gwei'),
+       data: contract.methods[functionName](...params).encodeABI(),
+       value: web3.utils.toWei('0.1', 'ether'),
+   };
+
+  try {
+      // Sign the transaction
+      const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
+
+      // Send the transaction
+      const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+      await ctx.reply("Waitting to exececute transaction");
+      await ctx.reply(`Transaction complete: ${receipt.transactionHash.toString()}`);
+  } catch (error) {
+      console.error('Error sending transaction:', error);
+  }
 }
 
 export async function handleRemoveLiquidity(ctx: BotContext) {
@@ -111,17 +145,45 @@ export async function handleRemoveLiquidity(ctx: BotContext) {
   await ctx.reply(message);
 }
 
-export async function handleRebalance(ctx: BotContext) {
-  const message = "Rebalancing your portfolio will adjust your positions across different pools to optimize returns. Would you like to proceed with rebalancing?";
+export async function handleClaim(ctx: BotContext) {
+  const message = "Claiming your portfolio will adjust your positions across different pools to optimize returns. Would you like to proceed ?";
   ctx.session.messages.push({ type: 'bot', content: message });
   await ctx.reply(message, {
     reply_markup: {
       keyboard: [
-        [{ text: "Yes, rebalance my portfolio" }, { text: "No, keep current allocation" }],
+        [{ text: "Confirm Claim" }, { text: "No, keep current allocation" }],
         [{ text: "Back to Liquidity Menu" }]
       ],
       resize_keyboard: true,
       one_time_keyboard: false
     }
   });
+}
+
+export async function claim(ctx: BotContext){
+   // Define the function parameters
+   const functionName: string = 'withdraw';
+   const params: any[] = [ /* Your function parameters here */ ];
+
+   // Create the transaction
+   const tx = {
+       from: account,
+       to: contractAddress,
+       gas: 90000000,
+       gasPrice: web3.utils.toWei('1800', 'gwei'),
+       data: contract.methods[functionName](...params).encodeABI(),
+   };
+
+  try {
+      // Sign the transaction
+      const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
+
+      // Send the transaction
+      const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+      await ctx.reply("Waitting to exececute transaction");
+      await ctx.reply(`Transaction complete: ${receipt.transactionHash.toString()}`);
+  } catch (error) {
+      console.error('Error sending transaction:', error);
+      await ctx.reply(`Transaction error: ${error}`);
+  }
 }

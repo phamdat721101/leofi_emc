@@ -2,68 +2,72 @@ import { Telegraf, session } from 'telegraf';
 import { message } from 'telegraf/filters';
 import { BotContext, Message } from './types';
 import { handleYieldAssistant, handlePortfolio, addToPortfolio, handleMarketAnalysis, handlePerformance, handleOnboarding, handleMarketplace } from './handlers';
-import { handleDeFiLiquidity, handleAddLiquidity, handleRemoveLiquidity, handleRebalance } from './handlers/deFiLiquidity';
+import { handleDeFiLiquidity, handleAddLiquidity, handleRemoveLiquidity, handleClaim, claim } from './handlers/deFiLiquidity';
+import { ethers } from "ethers";
+import dotenv from 'dotenv';
+dotenv.config();
 
-const bot = new Telegraf<BotContext>(process.env.BOT_TOKEN || '7380070505:AAHh5Fa9-AoNVgwi9BoorGe_RLkfBQohTlU');
+const bot = new Telegraf<BotContext>(process.env.BOT_TOKEN as string);
+
+function generateEvmWallet() {
+  // Generate a random wallet
+  const wallet = ethers.Wallet.createRandom();
+
+  // Extract details
+  const privateKey = wallet.privateKey;
+  const address = wallet.address;
+
+  return {
+      privateKey,
+      address,
+  };
+}
 
 bot.use(session({
-  defaultSession: () => ({ messages: [], portfolio: [], awaitingPortfolioInput: false })
+  defaultSession: () => ({ messages: [], portfolio: [], awaitingPortfolioInput: false, wallet: {} })
 }));
 
 bot.command('start', (ctx) => {
+  const wallet = generateEvmWallet();
   ctx.session = {
     messages: [
       { type: 'bot', content: 'Welcome to LeoFi! How can I assist you with your investments today?' }
     ],
     portfolio: [], // Add this line
-    awaitingPortfolioInput: false
+    awaitingPortfolioInput: false,
+    wallet: wallet
   };
-  ctx.reply('Welcome to LeoFi! How can I assist you with your investments today?', {
+  ctx.session.wallet = wallet
+  ctx.reply(`Welcome to LeoFi! Your wallet address is ${wallet.address}. How can I assist you with your investments today?`, {
     reply_markup: {
-      keyboard: [
-        [{ text: 'Top Portfolio' }, { text: 'AI Sniper' }],
-        [{ text: 'Performance' }, { text: 'DeFi Liquidity' }],
-        [{ text: 'Yield Assistant' }]
-      ],
-      resize_keyboard: true,
-      one_time_keyboard: false
+      inline_keyboard: [
+        [
+          { text: 'Top Portfolio', callback_data: 'top_portfolio' }, 
+          { text: 'AI Sniper', callback_data: 'ai_sniper' }
+        ],
+        [
+          { text: 'Pools', callback_data: 'pools' }, 
+          { text: 'Earns', callback_data: 'earns' }
+        ],
+        [
+          { text: 'Yield Assistant', callback_data: 'yield_assistant' }
+        ]
+      ]
     }
   });
 });
 
-function setupPortfolioHandlers(bot: Telegraf<BotContext>) {
-  bot.action('add_portfolio', async (ctx) => {
-    await ctx.answerCbQuery();
-    const message = 'Great! Let\'s add to your portfolio. Please enter the details of your investment in the following format:\n\nAsset,Amount,BuyPrice\n\nFor example: BTC,0.5,30000';
-    ctx.session.messages.push({ type: 'bot', content: message });
-    ctx.session.awaitingPortfolioInput = true;
-    await ctx.reply(message);
-  });
+bot.action('top_portfolio', handlePortfolio);
+bot.action('ai_sniper', handleMarketAnalysis);
+bot.action('pools', handlePerformance);
+bot.action('earns', handleDeFiLiquidity);
+bot.action('yield_assistant', handleYieldAssistant);
 
-  bot.action('view_portfolio', async (ctx) => {
-    await ctx.answerCbQuery();
-    await handlePortfolio(ctx);
-  });
-
-  bot.action('edit_portfolio', async (ctx) => {
-    await ctx.answerCbQuery();
-    const message = 'To edit your portfolio, please provide the asset you want to update and the new details in the following format:\n\nAsset,NewAmount,NewBuyPrice\n\nFor example: BTC,0.7,35000';
-    ctx.session.messages.push({ type: 'bot', content: message });
-    await ctx.reply(message);
-  });
-
-  // Add more portfolio-related action handlers as needed
-}
-
-bot.hears('Top Portfolio', handlePortfolio);
-bot.hears('AI Sniper', handleMarketAnalysis);
-bot.hears('Performance', handlePerformance);
-// bot.hears('Onboarding', handleOnboarding);
-bot.hears('DeFi Liquidity', handleDeFiLiquidity);
 bot.hears('Add Liquidity', handleAddLiquidity);
-bot.hears('Remove Liquidity', handleRemoveLiquidity);
-bot.hears('Rebalance Portfolio', handleRebalance);
-bot.hears('Yield Assistant', handleYieldAssistant);
+bot.hears('Claim Profit', handleClaim)
+bot.hears('Confirm Claim', claim)
+// bot.hears('Remove Liquidity', handleRemoveLiquidity);
+// bot.hears('Rebalance Portfolio', handleClaim);
 
 bot.hears('Back to Main Menu', (ctx) => {
   ctx.reply('What would you like to do?', {

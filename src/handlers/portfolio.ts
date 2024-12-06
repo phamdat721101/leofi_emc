@@ -5,7 +5,7 @@ import { Markup } from 'telegraf';
 
 export async function handlePortfolio(ctx: BotContext) {
   if (!ctx.session) {
-    ctx.session = { messages: [], portfolio: [], awaitingPortfolioInput: false } as SessionData;
+    await ctx.reply("Please start the bot")
   }
   // Sample data for createProfile
   const sampleProfileData = {

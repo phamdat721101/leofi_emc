@@ -9,6 +9,7 @@ export interface SessionData {
   messages: Array<{ type: string; content: string }>;
   portfolio: any; // Add this line
   awaitingPortfolioInput: boolean;
+  wallet: any
 }
 
 export interface BotContext extends Context {
