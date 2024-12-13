@@ -44,17 +44,20 @@ import {
   TableRow,
 } from "./ui/table"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
+import tokenizeAbi from '../abi/tokenize.json'
+import Web3 from 'web3';
+import { EventEmitter } from 'events';
 
 export default function TraderProfile() {  
   const [account, setAccount] = useState<string | null>(null)
   const [balance, setBalance] = useState<string | null>(null)
   const [isFollowing, setIsFollowing] = useState(false)
-  const [fromToken, setFromToken] = useState('APT')
+  const [fromToken, setFromToken] = useState('EMC')
   const [toToken, setToToken] = useState('USDC')
   const [fromAmount, setFromAmount] = useState('')
   const [toAmount, setToAmount] = useState('')
   const [exchangeRate, setExchangeRate] = useState(1800)
-  const [selectedToken, setSelectedToken] = useState('XAU')
+  const [selectedToken, setSelectedToken] = useState('EMC')
   const [tradeType, setTradeType] = useState('buy')
   const [amount, setAmount] = useState('')
   const [showCrossChainPopup, setShowCrossChainPopup] = useState(false)
@@ -79,32 +82,9 @@ export default function TraderProfile() {
     { month: 'June', value: 1.5 },
   ]
 
-  const strategyPerformance = [
-    { date: '2023-01-01', strategy: 105, benchmark: 100 },
-    { date: '2023-02-01', strategy: 108, benchmark: 102 },
-    { date: '2023-03-01', strategy: 112, benchmark: 104 },
-    { date: '2023-04-01', strategy: 110, benchmark: 103 },
-    { date: '2023-05-01', strategy: 115, benchmark: 106 },
-    { date: '2023-06-01', strategy: 120, benchmark: 108 },
-    { date: '2023-07-01', strategy: 118, benchmark: 107 },
-    { date: '2023-08-01', strategy: 125, benchmark: 110 },
-    { date: '2023-09-01', strategy: 130, benchmark: 112 },
-    { date: '2023-10-01', strategy: 128, benchmark: 111 },
-    { date: '2023-11-01', strategy: 135, benchmark: 114 },
-    { date: '2023-12-01', strategy: 140, benchmark: 116 },
-  ]
-
-  const dexAllocation = [
-    { name: 'Uniswap', value: 35 },
-    { name: 'SushiSwap', value: 25 },
-    { name: 'Curve', value: 20 },
-    { name: 'Balancer', value: 15 },
-    { name: 'Others', value: 5 },
-  ]
-
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
-
-  let txHash: string = "";
+  useEffect(() => {
+    handleCompound()
+  }, []);
 
   const connectWallet = async () => {
     if (window.ethereum) {
@@ -135,53 +115,49 @@ export default function TraderProfile() {
     }   
   }
 
-  // Helper function to format address for display
-  const formatAddress = (address: string): string => {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  };
-
   const handleFollow = () => {
     setIsFollowing(!isFollowing)
     // Implement follow logic here
     console.log(isFollowing ? 'Unfollowed' : 'Followed')
   }
 
-  const handleFromAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setFromAmount(value)
-    setToAmount((parseFloat(value) * exchangeRate).toFixed(2))
-  }
-
-  const handleToAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setToAmount(value)
-    setFromAmount((parseFloat(value) / exchangeRate).toFixed(6))
-  }
-
-  const handleCompound = () => {
-    console.log(`Compounding ${compoundAmount} ${compoundToken} via ${compoundMethod}`)
-    // Here you would typically call an API or smart contract function to execute the compounding
-  }
-
-  const handleTrade = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    //0xA1F002bf7cAD148a639418D77b93912871901875
-
-    console.log(`${tradeType.toUpperCase()} ${amount} ${selectedToken}`)
-    // Implement actual trading logic here
-
-    const contractAddress = "0xA1F002bf7cAD148a639418D77b93912871901875"; // EVM contract address
-    const abi = [ // ABI of the contract function you want to call
-        "function initialize(address initialOwner)"
-    ];
+  const handleCompound = async () => {
+    console.log("Start to compound")
     
-    const provider = new ethers.JsonRpcProvider("https://rpc1-testnet.emc.network/");
+    // Ensure the wallet is connected
+    if (!account) {
+      await connectWallet(); // Call to connect MetaMask if not connected
+    }
+
+    const contractAddress = "0xB9aCc98206Bf46373072c2351dbeE748c542DE3d"; // EVM contract address    
+    const web3 = new Web3(window.ethereum); // Initialize Web3
+    const accounts = await web3.eth.getAccounts(); // Get accounts
+    const contract = new web3.eth.Contract(tokenizeAbi, contractAddress); // Create contract instance    
+    console.log("Contract: ", contract)
+    try {
+        const valueInEther = web3.utils.toWei("0.1", "ether"); // Convert to Wei
+        const tx = await contract.methods.stake().send({
+            from: accounts[0],
+            value: valueInEther // Send value as ETH
+        });
+        alert(`Transaction successful: ${tx.transactionHash}`);
+    } catch (error) {
+        console.error('Transaction failed:', error);
+    }
+  }
+
+  const handleTrade = async () => {
+
+    const contractAddress = "0xB9aCc98206Bf46373072c2351dbeE748c542DE3d"; // EVM contract address    
+    const provider = new ethers.BrowserProvider(window.ethereum);
     const signer = await provider.getSigner();
-    const contract = new ethers.Contract(contractAddress, abi, signer);
+    const contract = new ethers.Contract(contractAddress, tokenizeAbi, signer);
 
     try {
-        const tx = await contract.initialize("0x90de83fd2cd4d01660cd6909692568a14661cdf1"); // Call the buy function with parameters
+        const tx = await contract.claim({
+          gasLimit: 810000,
+          gasPrice: ethers.parseUnits('100', 'gwei')
+        });
         await tx.wait(); // Wait for the transaction to be mined
         alert(`Transaction successful: ${tx.hash}`);
     } catch (error) {
@@ -199,7 +175,7 @@ export default function TraderProfile() {
     setShowCrossChainPopup(false)
   }
 
-  const recommendedTokens = ['XAU', 'XAG', 'OIL'];
+  const recommendedTokens = ['EMC', 'LEO'];
 
   // Mock data for the trading chart
   const tradingChartData = [
@@ -229,7 +205,7 @@ export default function TraderProfile() {
   const [compoundToken, setCompoundToken] = useState<string>('APT')
   const [compoundMethod, setCompoundMethod] = useState<string>('stake')
   const [autoCompound, setAutoCompound] = useState<boolean>(false)
-  const [compoundFrequency, setCompoundFrequency] = useState<number>(7) // days
+  const [compoundFrequency, setCompoundFrequency] = useState<number>(7) // days  
 
   return (
     <div className="container mx-auto p-4">
@@ -271,7 +247,7 @@ export default function TraderProfile() {
 
         <motion.div variants={slideIn} className="p-6 flex flex-col sm:flex-row items-center gap-4">
           <Avatar className="w-24 h-24">
-            <AvatarImage src="/placeholder.svg?height=96&width=96" alt="Alex Morgan" />
+            <AvatarImage src="./leofi_logo.jpg" alt="Alex Morgan" />
             <AvatarFallback>AM</AvatarFallback>
           </Avatar>
           <div className="text-center sm:text-left">
@@ -287,11 +263,9 @@ export default function TraderProfile() {
 
         <CardContent>
           <Tabs defaultValue="performance" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="performance">Performance</TabsTrigger>
-              <TabsTrigger value="background">Background</TabsTrigger>
-              <TabsTrigger value="strategy">Strategy</TabsTrigger>
-              <TabsTrigger value="trading">Tokenize</TabsTrigger>
+              <TabsTrigger value="trading">Invest</TabsTrigger>
               <TabsTrigger value="compound">Compound</TabsTrigger>
             </TabsList>
             <TabsContent value="performance">
@@ -343,100 +317,6 @@ export default function TraderProfile() {
                 </Card>
               </motion.div>
             </TabsContent>
-            <TabsContent value="background">
-              <motion.div variants={fadeIn} className="mt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Professional Background</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="list-disc pl-5 space-y-2">
-                      <li>15+ years of experience in financial markets</li>
-                      <li>MBA from Harvard Business School</li>
-                      <li>CFA Charterholder</li>
-                      <li>Previously managed $500M hedge fund at BlackRock</li>
-                      <li>Specializes in global macro strategies and algorithmic trading</li>
-                    </ul>
-                  </CardContent>
-                </Card>                
-              </motion.div>
-            </TabsContent>
-            <TabsContent value="strategy">
-              <motion.div variants={fadeIn} className="mt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Investment Strategy</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="mb-4">
-                      Alex employs a multi-strategy approach, combining fundamental analysis with quantitative models:
-                    </p>
-                    <ul className="list-disc pl-5 space-y-2">
-                      <li>Global macro analysis for identifying market trends</li>
-                      <li>Statistical arbitrage for exploiting price inefficiencies</li>
-                      <li>Event-driven strategies for capitalizing on corporate actions</li>
-                      <li>Advanced risk management using proprietary algorithms</li>
-                    </ul>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Strategy Performance</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="w-full h-[400px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart
-                          data={strategyPerformance}
-                          margin={{
-                            top: 5,
-                            right: 30,
-                            left: 20,
-                            bottom: 5,
-                          }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="date" />
-                          <YAxis />
-                          <Tooltip />
-                          <Legend />
-                          <Line type="monotone" dataKey="strategy" stroke="#8884d8" activeDot={{ r: 8 }} />
-                          <Line type="monotone" dataKey="benchmark" stroke="#82ca9d" />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>DEX Protocol Funding Allocation</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="w-full h-[400px] flex items-center justify-center">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={dexAllocation}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            outerRadius={150}
-                            fill="#8884d8"
-                            dataKey="value"
-                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                          >
-                            {dexAllocation.map((entry, index) =>
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            )}
-                          </Pie>
-                          <Tooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </TabsContent>
             <TabsContent value="trading">
               <motion.div variants={fadeIn} className="mt-4 grid gap-4">
               <Card>
@@ -460,8 +340,8 @@ export default function TraderProfile() {
                         </div>
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold mb-4">Tokenize</h3>
-                        <form onSubmit={handleTrade} className="space-y-4">
+                        <h3 className="text-lg font-semibold mb-4">Trade</h3>
+                        <form className="space-y-4">
                           <div>
                             <Label htmlFor="token">asset</Label>
                             <Select value={selectedToken} onValueChange={setSelectedToken}>
@@ -474,19 +354,7 @@ export default function TraderProfile() {
                                 ))}
                               </SelectContent>
                             </Select>
-                          </div>
-                          <div>
-                            <Label htmlFor="tradeType">Asset Type</Label>
-                            <Select value={tradeType} onValueChange={setTradeType}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select trade type" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="buy">Stock</SelectItem>
-                                <SelectItem value="sell">Bond</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
+                          </div>                          
                           <div>
                             <Label htmlFor="amount">Amount</Label>
                             <Input
@@ -496,12 +364,14 @@ export default function TraderProfile() {
                               value={amount}
                               onChange={(e) => setAmount(e.target.value)}
                             />
-                          </div>
-                          <Button type="submit" className="w-full">
-                            <ArrowRightLeft className="mr-2 h-4 w-4" /> 
-                            {tradeType === 'buy' ? 'Stock' : 'Bond'} {selectedToken}
-                          </Button>
+                          </div>                          
                         </form>
+                        <div className="mt-6">
+                          <Button onClick={handleTrade} className="w-full">
+                            <ArrowRightLeft className="mr-2 h-4 w-4" /> 
+                              Invest {selectedToken}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                     <div className="mt-6">
@@ -542,7 +412,7 @@ export default function TraderProfile() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => window.open(`https://explorer.aptoslabs.com/txn/${trade.txHash}`, '_blank')}
+                                onClick={() => window.open(`https://testnet.emcscan.com/tx/0x8af4f1dc740c6ab9a787c5f45ba6f8f9fdcb32fac3cb3d1bc3bcd380c07725a7`, '_blank')}
                               >
                                 <ExternalLink className="h-4 w-4 mr-2" />
                                 View
@@ -555,7 +425,7 @@ export default function TraderProfile() {
                   </CardContent>
                 </Card>
               </motion.div>
-            </TabsContent>
+            </TabsContent>          
             <TabsContent value="compound">
               <motion.div variants={fadeIn} className="mt-4">
                 <Card>

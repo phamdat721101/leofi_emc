@@ -7,29 +7,10 @@ export async function handlePortfolio(ctx: BotContext) {
   if (!ctx.session) {
     await ctx.reply("Please start the bot")
   }
-  // Sample data for createProfile
-  const sampleProfileData = {
-    name: "John Doe",
-    email: "john.doe@example.com",
-    age: 30,
-    investmentGoals: ["Retirement", "Growth"]
-  };
-
-  // Call createProfile service with sample data
-  const createdProfile = await createProfile(sampleProfileData);
-  console.log('Created profile:', createdProfile);
-
-  // Call getProfile service and print to console
-  const profile = await getProfile();
-  console.log('User profile:', profile);
 
   const portfolioSummary = 'Here\'s a summary of your current portfolio:';
   ctx.session.messages.push({ type: 'bot', content: portfolioSummary });
   await ctx.reply(portfolioSummary);
-
-  // const chartBuffer = await generatePortfolioChart();
-  // ctx.session.messages.push({ type: 'chart', content: 'Portfolio Breakdown' });
-  // await ctx.replyWithPhoto({ source: chartBuffer });
   
   const tableData = [
     { profile_name: 'DeFi Master', profit: 45, sector: 'DeFi', link: 'https://www.leofi.xyz/' },
