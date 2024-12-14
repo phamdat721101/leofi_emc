@@ -2,6 +2,8 @@
 
 LeoFi is a cutting-edge decentralized asset management protocol designed to revolutionize the way users interact with and manage their digital assets. By combining advanced blockchain technology with user-friendly interfaces, LeoFi offers a comprehensive solution for both novice and experienced users in the decentralized finance (DeFi) space.
 
+## 🌟 Testnet Contract Adress: 0xB9aCc98206Bf46373072c2351dbeE748c542DE3d
+
 ## 🌟 Key Features
 
 - **Decentralized Asset Management**: Securely manage your digital assets without intermediaries.
