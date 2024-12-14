@@ -1,98 +1,119 @@
-# LeoFi Bot: Your Smart DeFi Assistant
+# LeoFi: Decentralized Asset Management Protocol
 
-![LeoFi Logo](https://hebbkx1anhila5yf.public.blob.vercel-storage.com/LeoFi_4x4-qV8iHK5K8IxONkFo4Fe4Hwu9AwMHf0.jpg)
+LeoFi is a cutting-edge decentralized asset management protocol designed to revolutionize the way users interact with and manage their digital assets. By combining advanced blockchain technology with user-friendly interfaces, LeoFi offers a comprehensive solution for both novice and experienced users in the decentralized finance (DeFi) space.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen)](https://nodejs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-4.5%2B-blue)](https://www.typescriptlang.org/)
-[![Polkadot](https://img.shields.io/badge/Polkadot-Ready-blue)](https://polkadotlabs.com/)
+## 🌟 Key Features
 
-LeoFi Bot is an intelligent DeFi assistant designed specifically for the Polkadot blockchain ecosystem. With advanced AI capabilities and real-time market data integration, LeoFi Bot provides personalized investment advice, portfolio management, and seamless interactions with Polkadot-based DeFi protocols.
+- **Decentralized Asset Management**: Securely manage your digital assets without intermediaries.
+- **AI-Powered Chat Assistant**: Get real-time support and insights through our intelligent chat interface.
+- **Interactive Dashboard**: Visualize and control your portfolio with our intuitive web application.
+- **Off-Chain Services**: Enhance performance and user experience with our dedicated off-chain solution.
 
-## Features
+## 🏗️ Repository Structure
 
-- **Cross-Chain Portfolio Management**: Analyze and optimize your DeFi portfolio across both Polkadot-based and EVM-compatible protocols and tokens.
-- **Real-time Market Insights**: Access up-to-date information on token prices, liquidity pools, and yield farming opportunities within both Polkadot and EVM-compatible ecosystems.
-- **Automated Trading Strategies**: Set up and execute custom trading strategies based on market conditions and your risk profile for both Polkadot and EVM-compatible chains.
-- **Multi-Chain DeFi Protocol Interactions**: Seamlessly interact with popular DeFi protocols across both Polkadot and EVM-compatible side-chains directly through the bot.
-- **Risk Assessment for Investments**: Evaluate the risks associated with different DeFi investments on both Polkadot and EVM-compatible networks and receive tailored recommendations.
-- **Gas Fee Optimization**: Get suggestions for the best times to execute transactions to minimize gas fees, whether operating on the Polkadot network or EVM-compatible side-chains.
-- **Multi-Chain Ecosystem Support**: Operate within both the Polkadot blockchain and EVM-compatible side-chains, with potential for further multi-chain expansion.
-- **DeFi Educational Resources**: Access a wealth of knowledge about DeFi across both Polkadot and EVM ecosystems and learn about new protocols and strategies specific to each network.
+Our project is organized into three main components:
 
-## Prerequisites
+1. **Main (Bot)**: The core of our AI-powered chat assistant.
+   - Repository: `main`
+   - Features: Natural language processing, asset management commands, real-time market data integration.
 
-Before you begin, ensure you have met the following requirements:
+2. **Web Application**: Our user dashboard for portfolio management and visualization.
+   - Repository: `leofi-profile`
+   - Features: Portfolio overview, transaction history, performance analytics, user settings.
 
-- Node.js (v14.0.0 or later)
-- npm (v6.0.0 or later)
-- An Polkadot-compatible wallet (e.g., Petra, Martian)
-- Basic knowledge of DeFi concepts and Polkadot blockchain technology
+3. **Off-Chain Services**: Supporting infrastructure for enhanced performance and features.
+   - Repository: `emc-service`
+   - Features: Data caching, complex computations, third-party integrations.
 
-## Installation
+## 🚀 Getting Started
 
-To install LeoFi Bot, follow these steps:
+To get started with LeoFi, please refer to the individual README files in each repository for specific setup instructions:
 
-1. Clone the repository:
-   ```
-   git clone https://github.com/LeoFiHub/leofi_polkadot.git
-   ```
+- [Chat Assistant Setup](./main/README.md)
+- [Web Application Setup](./leofi-profile/README.md)
+- [Off-Chain Services Setup](./emc-service/README.md)
 
-2. Navigate to the project directory:
-   ```
-   cd leofi_polkadot
-   ```
+## 🔧 Running the Sector
 
-3. Install the dependencies:
-   ```
-   npm install
-   ```
+To run the LeoFi sector, which includes all components of the system, follow these steps:
 
-4. Create a `.env` file in the root directory and add your configuration:
-   ```
-   API_KEY=your_api_key_here
-   NODE_URL=https://fullnode.mainnet.polkadotlabs.com/v1
-   ```
+1. **Clone the Repositories**
 
-5. Build the project:
-   ```
-   npm run build
-   ```
+   \`\`\`bash
+   git clone https://github.com/leofi/main.git
+   git clone https://github.com/leofi/leofi-profile.git
+   git clone https://github.com/leofi/emc-service.git
+   \`\`\`
 
-## Usage
+2. **Set Up Environment Variables**
 
-To start using LeoFi Bot, run the following command:
+   Create a `.env` file in each project directory and add the necessary environment variables. Refer to the `.env.example` files in each repository for the required variables.
 
-```
-npm start
-```
+3. **Install Dependencies**
 
-This will launch the bot's interface. Connect your Polkadot wallet when prompted, and you'll be ready to start exploring the world of Polkadot DeFi with LeoFi Bot!
+   Navigate to each project directory and install the dependencies:
 
-Here are some example commands you can try:
+   \`\`\`bash
+   cd main && npm install
+   cd ../leofi-profile && npm install
+   cd ../emc-service && npm install
+   \`\`\`
 
-- `/portfolio`: View your current Polkadot DeFi portfolio
-- `/market ATOM`: Get real-time market data for polkadot token
-- `/strategy liquid-swap`: Set up a liquidity provision strategy on Polkadot DEXes
-- `/risk-assess CAKE`: Evaluate the risks associated with PancakeSwap on Polkadot
-- `/educate move-language`: Learn about the Move programming language used in Polkadot
+4. **Start the Services**
 
-## Contributing
+   Open three terminal windows, one for each service:
 
-We welcome contributions to LeoFi Bot! If you have suggestions for improvements or encounter any issues, please feel free to open an issue or submit a pull request.
+   - For the main bot:
+     \`\`\`bash
+     cd main && npm run start
+     \`\`\`
 
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a pull request
+   - For the web application:
+     \`\`\`bash
+     cd leofi-profile && npm run dev
+     \`\`\`
 
-Please make sure to update tests as appropriate and adhere to the project's code style guidelines.
+   - For the off-chain service:
+     \`\`\`bash
+     cd emc-service && npm run start
+     \`\`\`
 
-## License
+5. **Access the Applications**
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+   - The chat bot will be available at `http://localhost:3000`
+   - The web dashboard will be accessible at `http://localhost:3001`
+   - The off-chain service API will be running at `http://localhost:4000`
+
+6. **Run Tests (Optional)**
+
+   To ensure everything is working correctly, you can run the test suites for each project:
+
+   \`\`\`bash
+   cd main && npm test
+   cd ../leofi-profile && npm test
+   cd ../emc-service && npm test
+   \`\`\`
+
+Please note that you may need to have certain dependencies installed on your system, such as Node.js (v14 or later) and npm. For detailed requirements and troubleshooting, refer to the individual README files in each repository.
+
+
+## 📚 Documentation
+
+For comprehensive documentation on how to use LeoFi, please visit our [official documentation](https://docs.leofi.io).
+
+## 🤝 Contributing
+
+We welcome contributions from the community! If you'd like to contribute, please check out our [Contribution Guidelines](CONTRIBUTING.md).
+
+## 📄 License
+
+LeoFi is released under the [MIT License](LICENSE).
+
+## 📞 Support
+
+If you encounter any issues or have questions, please reach out to our support team at support@leofi.io or use the chat assistant in our application.
 
 ---
 
-Happy Polkadot DeFi-ing with LeoFi Bot! 🚀🦁💰
+LeoFi - Empowering Your Financial Future with Decentralized Asset Management
+
