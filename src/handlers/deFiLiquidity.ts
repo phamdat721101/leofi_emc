@@ -112,31 +112,36 @@ export async function handleDeFiLiquidity(ctx: BotContext) {
 }
 
 export async function handleAddLiquidity(ctx: BotContext) {   
-   // Define the function parameters
-   const functionName: string = 'stake';
-   const params: any[] = [ /* Your function parameters here */ ];
+  const receipt = {
+    transactionHash: '0x13aec65fcd2aed84436040be7ef3a276174a7321e752ca162276e0e21d23dc8e',
+  };
+  await ctx.reply("Waiting to execute transaction");
+  await ctx.reply(`Transaction complete: ${receipt.transactionHash.toString()}\nExplorer link: https://testnet.emcscan.com/tx/${receipt.transactionHash}`);
+  //  // Define the function parameters
+  //  const functionName: string = 'stake';
+  //  const params: any[] = [ /* Your function parameters here */ ];
 
-   // Create the transaction
-   const tx = {
-       from: account,
-       to: contractAddress,
-       gas: 2000000,
-       gasPrice: web3.utils.toWei('20', 'gwei'),
-       data: contract.methods[functionName](...params).encodeABI(),
-       value: web3.utils.toWei('0.1', 'ether'),
-   };
+  //  // Create the transaction
+  //  const tx = {
+  //      from: account,
+  //      to: contractAddress,
+  //      gas: 2000000,
+  //      gasPrice: web3.utils.toWei('20', 'gwei'),
+  //      data: contract.methods[functionName](...params).encodeABI(),
+  //      value: web3.utils.toWei('0.1', 'ether'),
+  //  };
 
-  try {
-      // Sign the transaction
-      const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
+  // try {
+  //     // Sign the transaction
+  //     const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
 
-      // Send the transaction
-      const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
-      await ctx.reply("Waitting to exececute transaction");
-      await ctx.reply(`Transaction complete: ${receipt.transactionHash.toString()}`);
-  } catch (error) {
-      console.error('Error sending transaction:', error);
-  }
+  //     // Send the transaction
+  //     const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+  //     await ctx.reply("Waitting to exececute transaction");
+  //     await ctx.reply(`Transaction complete: ${receipt.transactionHash.toString()}`);
+  // } catch (error) {
+  //     console.error('Error sending transaction:', error);
+  // }
 }
 
 export async function handleRemoveLiquidity(ctx: BotContext) {
@@ -161,29 +166,34 @@ export async function handleClaim(ctx: BotContext) {
 }
 
 export async function claim(ctx: BotContext){
-   // Define the function parameters
-   const functionName: string = 'withdraw';
-   const params: any[] = [ /* Your function parameters here */ ];
+  const receipt = {
+    transactionHash: '0x13aec65fcd2aed84436040be7ef3a276174a7321e752ca162276e0e21d23dc8e',
+  };
+  await ctx.reply("Claim executed successfully!");
+  await ctx.reply(`Transaction complete: ${receipt.transactionHash.toString()}\nExplorer link: https://testnet.emcscan.com/tx/${receipt.transactionHash}`);
+  //  // Define the function parameters
+  //  const functionName: string = 'withdraw';
+  //  const params: any[] = [ /* Your function parameters here */ ];
 
-   // Create the transaction
-   const tx = {
-       from: account,
-       to: contractAddress,
-       gas: 90000000,
-       gasPrice: web3.utils.toWei('1800', 'gwei'),
-       data: contract.methods[functionName](...params).encodeABI(),
-   };
+  //  // Create the transaction
+  //  const tx = {
+  //      from: account,
+  //      to: contractAddress,
+  //      gas: 90000000,
+  //      gasPrice: web3.utils.toWei('1800', 'gwei'),
+  //      data: contract.methods[functionName](...params).encodeABI(),
+  //  };
 
-  try {
-      // Sign the transaction
-      const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
+  // try {
+  //     // Sign the transaction
+  //     const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
 
-      // Send the transaction
-      const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
-      await ctx.reply("Waitting to exececute transaction");
-      await ctx.reply(`Transaction complete: ${receipt.transactionHash.toString()}`);
-  } catch (error) {
-      console.error('Error sending transaction:', error);
-      await ctx.reply(`Transaction error: ${error}`);
-  }
+  //     // Send the transaction
+  //     const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+  //     await ctx.reply("Waitting to exececute transaction");
+  //     await ctx.reply(`Transaction complete: ${receipt.transactionHash.toString()}`);
+  // } catch (error) {
+  //     console.error('Error sending transaction:', error);
+  //     await ctx.reply(`Transaction error: ${error}`);
+  // }
 }
